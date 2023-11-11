@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: Celery
+
+  whisper:
+    build:
+      context: ./whisper
+      dockerfile: whisper.Dockerfile
+    depends_on:
+      - backend
+
+  llama:
+    build:
+      context: ./llama
+      dockerfile: llama.Dockerfile
+    depends_on:
+      - backend
+
