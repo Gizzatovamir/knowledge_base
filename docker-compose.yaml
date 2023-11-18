@@ -1,22 +1,67 @@
-version: "3.8"
+version: "3"
 
 services:
   backend:
     build:
       context: ./backend
-    container_name: Celery
+      dockerfile: backend.Dockerfile
+    container_name: django
+    network_mode: "host"
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - backend:/backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+    depends_on:
+      - redis
+  celery:
+    build:
+      context: ./backend
+      dockerfile: backend.Dockerfile
+    command: celery -A backend worker -l INFO
+    network_mode: "host"
+    volumes:
+      - ./backend:/backend
+    environment:
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+    depends_on:
+      - backend
+      - redis
+  redis:
+    image: "redis:alpine"
 
   whisper:
-    build:
-      context: ./whisper
-      dockerfile: whisper.Dockerfile
+    image: "onerahmet/openai-whisper-asr-webservice:latest"
+    network_mode: "host"
+    environment:
+      - ASR_MODEL=base
+      - ASR_ENGINE=openai_whisper
+    ports:
+      - 9000:9000
     depends_on:
       - backend
 
   llama:
+    container_name: llama
+    network_mode: "host"
     build:
       context: ./llama
       dockerfile: llama.Dockerfile
+    volumes:
+      - llama:/llama_root
+    ports:
+      - 11434:11434
     depends_on:
       - backend
 
+volumes:
+  llama:
+    driver: local
+  backend:
+    driver: local
