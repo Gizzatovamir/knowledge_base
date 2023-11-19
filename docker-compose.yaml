@@ -12,8 +12,6 @@ services:
     ports:
       - "8000:8000"
       - "5000:5000"
-      - "11434:11434"
-      - "5672:5672"
     environment:
       - DEBUG=1
     depends_on:
@@ -29,7 +27,6 @@ services:
     ports:
       - "5672:5672"
 
-
   whisper:
     image: "onerahmet/openai-whisper-asr-webservice:latest"
     network_mode: "host"
@@ -37,25 +34,27 @@ services:
       - ASR_MODEL=base
       - ASR_ENGINE=openai_whisper
     ports:
-      - 9000:9000
+      - "9000:9000"
     depends_on:
       - backend
 
   llama:
+    image: "ollama/ollama:latest"
     container_name: llama
     network_mode: "host"
-    build:
-      context: ./llama
-      dockerfile: llama.Dockerfile
     volumes:
-      - llama:/llama_root
+      - model:/usr/share/ollama/.ollama/models
     ports:
       - "11434:11434"
     depends_on:
       - backend
 
 volumes:
-  llama:
+  model:
     driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: "$PWD/llama/model"
   backend:
     driver: local

@@ -13,7 +13,7 @@ def on_raw_message(body):
 @app.route("/")
 def main():
     msg = {"model": "llama2", "prompt": "Why is the sky blue?"}
-    task = generate_response.apply_async(msg)
+    task = generate_response.apply_async(args=(msg,))
     result_msg = task.get(on_message=on_raw_message, propagate=False)
     response = {
         "state": task.state,
