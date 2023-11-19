@@ -1,3 +1,3 @@
-from .celery import app
+from .set_selery import app as backend
 
-__all__ = ("app",)
+__all__ = ("backend",)

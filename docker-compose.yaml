@@ -4,37 +4,31 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: backend.Dockerfile
-    container_name: django
+      dockerfile: Dockerfile
+    container_name: backend
     network_mode: "host"
-    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - backend:/backend
     ports:
       - "8000:8000"
+      - "5000:5000"
+      - "11434:11434"
+      - "5672:5672"
     environment:
       - DEBUG=1
-      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
-      - CELERY_BROKER=redis://redis:6379/0
     depends_on:
-      - redis
-  celery:
-    build:
-      context: ./backend
-      dockerfile: backend.Dockerfile
-    command: celery -A backend worker -l INFO
+      - rabbit
+  rabbit:
+    container_name: rabbit
+    hostname: rabbit
+    image: rabbitmq:3.7.15-alpine
     network_mode: "host"
-    volumes:
-      - ./backend:/backend
     environment:
-      - DEBUG=1
-      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
-      - CELERY_BROKER=redis://redis:6379/0
-    depends_on:
-      - backend
-      - redis
-  redis:
-    image: "redis:alpine"
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=CT2gNABH8eJ9yVh
+    ports:
+      - "5672:5672"
+
 
   whisper:
     image: "onerahmet/openai-whisper-asr-webservice:latest"
@@ -56,7 +50,7 @@ services:
     volumes:
       - llama:/llama_root
     ports:
-      - 11434:11434
+      - "11434:11434"
     depends_on:
       - backend
 
