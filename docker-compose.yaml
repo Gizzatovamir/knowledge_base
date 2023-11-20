@@ -14,8 +14,8 @@ services:
       - "5000:5000"
     environment:
       - DEBUG=1
-    depends_on:
-      - rabbit
+
+
   rabbit:
     container_name: rabbit
     hostname: rabbit
@@ -43,7 +43,7 @@ services:
     container_name: llama
     network_mode: "host"
     volumes:
-      - model:/usr/share/ollama/.ollama/models
+      - model:/model
     ports:
       - "11434:11434"
     depends_on:
