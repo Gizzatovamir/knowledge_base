@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 
 services:
   backend:
@@ -6,30 +6,50 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: backend
-    network_mode: "host"
+    network_mode: host
     volumes:
       - backend:/backend
-    ports:
-      - "8000:8000"
-      - "5000:5000"
     environment:
       - DEBUG=1
-
-
-  rabbit:
-    container_name: rabbit
-    hostname: rabbit
-    image: rabbitmq:3.7.15-alpine
-    network_mode: "host"
-    environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=CT2gNABH8eJ9yVh
+      - CELERY_BROKER_URL=redis://127.0.0.1:6379/0
+      - CELERY_RESULT_BACKEND=redis://127.0.0.1:6379
+      - CELERY_TASK_DEFAULT_QUEUE=default
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - CELERY_TASK_SERIALIZER=pickle
     ports:
-      - "5672:5672"
+      - "5000:5000"
+      - "11434:11434"
+
+  celery:
+    build:
+      context: ./backend
+      dockerfile: worker.Dockerfile
+    network_mode: host
+    environment:
+      - DEBUG=1
+      - CELERY_BROKER=redis://127.0.0.1:6379
+      - CELERY_RESULT_BACKEND=redis://127.0.0.1:6379
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - CELERY_TASK_SERIALIZER='json'
+    ports:
+      - "11434:11434"
+      - "5000:5000"
+      - '6379:6379'
+    depends_on:
+      - redis
+
+
+  redis:
+    image: redis:5.0-alpine
+    network_mode: host
+    environment:
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+    ports:
+      - '6379:6379'
 
   whisper:
     image: "onerahmet/openai-whisper-asr-webservice:latest"
-    network_mode: "host"
+    network_mode: host
     environment:
       - ASR_MODEL=base
       - ASR_ENGINE=openai_whisper
@@ -41,7 +61,7 @@ services:
   llama:
     image: "ollama/ollama:latest"
     container_name: llama
-    network_mode: "host"
+    network_mode: host
     volumes:
       - model:/model
     ports:

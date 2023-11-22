@@ -1,11 +1,17 @@
+import os
+
 from flask import Flask, jsonify, render_template
-from set_selery import app as celery_app
 from tasks import generate_response
 import json
 
 app = Flask(__name__)
-app.config["CELERY_BROKER_URL"] = "amqp://admin:CT2gNABH8eJ9yVh@rabbit:5672"
-app.config["CELERY_RESULT_BACKEND"] = "amqp://admin:CT2gNABH8eJ9yVh@rabbit:5672"
+app.config.from_mapping(
+    CELERY=dict(
+        broker_url=os.getenv("CELERY_BROKER_URL"),
+        result_backend=os.getenv("CELERY_RESULT_BACKEND"),
+        task_ignore_result=True,
+    ),
+)
 
 
 def on_raw_message(body):
@@ -21,7 +27,6 @@ def main():
         "state": task.state,
         "msg": result_msg,
     }
-    print(response)
     return f"{response}"
 
 
@@ -33,4 +38,3 @@ def result():
 if __name__ == "__main__":
     app.debug = True
     app.run()
-    celery_app.start()
