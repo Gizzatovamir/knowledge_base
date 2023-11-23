@@ -20,9 +20,9 @@ def on_raw_message(body):
 
 @app.route("/")
 def main():
-    msg = {"model": "llama2", "prompt": "Why is the sky blue?"}
-    task = generate_response.delay(msg)
-    result_msg = task.get(on_message=on_raw_message, propagate=False)
+    msg = {"model": "llama2", "prompt": "What is the speed of light"}
+    task = generate_response.delay(json.dumps(msg))
+    result_msg = task.get()
     response = {
         "state": task.state,
         "msg": result_msg,
