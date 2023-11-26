@@ -23,7 +23,7 @@ def main():
     msg = {
         "model": "llama2",
         "prompt": "What is the speed of light",
-        "stream": "false",
+        "stream": False,
     }
     task = generate_response.delay(json.dumps(msg))
     result_msg = task.get()

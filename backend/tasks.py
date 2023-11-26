@@ -23,4 +23,4 @@ def generate_response(msg) -> str:
     res: Dict[int, any] = dict()
     for index, line in enumerate(llama_response):
         res.update({index: line})
-    return res
+    return llama_response
