@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask, jsonify, render_template
-from tasks import generate_response
+from tasks import generate_response, generate_text
 import json
 
 app = Flask(__name__)
@@ -37,6 +37,14 @@ def main():
 @app.route("/result/")
 def result():
     pass
+
+
+@app.route("/text_gen")
+def text_gen():
+    task = generate_text.delay()
+    result_msg, test = task.get()
+    response = {"state": task.state, "msg": result_msg, "addit_msg": test}
+    return f"{response}"
 
 
 if __name__ == "__main__":

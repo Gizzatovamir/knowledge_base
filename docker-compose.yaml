@@ -15,7 +15,7 @@ services:
       - CELERY_RESULT_BACKEND=redis://127.0.0.1:6379
       - CELERY_TASK_DEFAULT_QUEUE=default
       - ALLOWED_HOSTS=localhost,127.0.0.1
-      - CELERY_TASK_SERIALIZER=json
+      - CELERY_TASK_SERIALIZER=pickle
     ports:
       - "5000:5000"
       - "11434:11434"
@@ -24,13 +24,14 @@ services:
     build:
       context: ./backend
       dockerfile: worker.Dockerfile
+    container_name: celery_worker
     network_mode: host
     environment:
       - DEBUG=1
       - CELERY_BROKER=redis://127.0.0.1:6379
       - CELERY_RESULT_BACKEND=redis://127.0.0.1:6379
       - ALLOWED_HOSTS=localhost,127.0.0.1
-      - CELERY_TASK_SERIALIZER=json
+      - CELERY_TASK_SERIALIZER=pickle
     ports:
       - "11434:11434"
       - "5000:5000"
